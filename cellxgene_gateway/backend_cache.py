@@ -76,7 +76,7 @@ class BackendCache:
             )
 
     def create_entry(self, key: CacheKey, scripts: List[str]):
-        port = 8000
+        port = 5005
         existing_ports = self.get_ports()
 
         while (port in existing_ports) or is_port_in_use(port):

@@ -1,6 +1,6 @@
 import unittest
 from collections import defaultdict
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from cellxgene_gateway.filecrawl import (
     render_item,
@@ -50,7 +50,7 @@ class TestRenderItemSource(unittest.TestCase):
 
 class TestRenderItemTree(unittest.TestCase):
     def setUp(self):
-        from cellxgene_gateway.gateway import app
+        from gateway import app
 
         self.app = app
         self.app_context = self.app.test_request_context()

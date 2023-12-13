@@ -12,6 +12,8 @@ import logging
 import os
 import urllib.parse
 from threading import Lock, Thread
+from flask_apscheduler import APScheduler
+from flask_mqtt import Mqtt
 
 from flask import (
     Flask,
@@ -34,8 +36,19 @@ from cellxgene_gateway.filecrawl import render_item_source
 from cellxgene_gateway.process_exception import ProcessException
 from cellxgene_gateway.prune_process_cache import PruneProcessCache
 from cellxgene_gateway.util import current_time_stamp
+# from schedule.job import Cache
 
 app = Flask(__name__)
+
+app.config['MQTT_BROKER_URL'] = '10.15.53.107'
+app.config['MQTT_BROKER_PORT'] = 1883
+app.config['MQTT_USERNAME'] = ''  # 当你需要验证用户名和密码时，请设置该项
+app.config['MQTT_PASSWORD'] = ''  # 当你需要验证用户名和密码时，请设置该项
+app.config['MQTT_KEEPALIVE'] = 5  # 设置心跳时间，单位为秒
+app.config['MQTT_TLS_ENABLED'] = False  # 如果你的服务器支持 TLS，请设置为 True
+MQTT_TOPIC = 'cellxgene-gateway'
+
+MQTT_CLIENT = Mqtt(app)
 
 item_sources = []
 default_item_source = None
@@ -76,6 +89,20 @@ if (
     )
 
 cache = BackendCache()
+# cache = Cache.cache
+
+
+class Config(object):
+    JOBS = [
+        {
+            'id': 'job1',
+            'func': 'schedule.job:publish_machine_status',
+            'trigger': 'interval',
+            'args': (cache,),
+            'seconds': 60
+        }
+    ]
+    SCHEDULER_API_ENABLED = True
 
 
 @app.errorhandler(CellxgeneException)
@@ -220,11 +247,14 @@ def do_view(path, source_name=None):
 
 @app.route("/cache_status", methods=["GET"])
 def do_GET_status():
+    print("cache.entry_list", cache.entry_list)
     return render_template(
         "cache_status.html",
         entry_list=cache.entry_list,
         extra_scripts=get_extra_scripts(),
     )
+
+
 
 
 @app.route("/cache_status.json", methods=["GET"])
@@ -278,6 +308,7 @@ def ip_address():
 
 
 def launch():
+    print('launch')
     env.validate()
     if not item_sources or not len(item_sources):
         raise Exception("No data sources specified for Cellxgene Gateway")
@@ -292,6 +323,10 @@ def launch():
     background_thread.start()
 
     app.launchtime = current_time_stamp()
+    app.config.from_object(Config())
+    scheduler = APScheduler()
+    scheduler.init_app(app)
+    scheduler.start()
     app.run(host="0.0.0.0", port=env.gateway_port, debug=False)
 
 
@@ -300,7 +335,7 @@ def main():
         level=env.log_level,
         format="%(asctime)s:%(name)s:%(levelname)s:%(message)s",
     )
-    cellxgene_data = os.environ.get("CELLXGENE_DATA", None)
+    cellxgene_data = os.environ.get("CELLXGENE_DATA", "")
     cellxgene_bucket = os.environ.get("CELLXGENE_BUCKET", None)
 
     if cellxgene_bucket is not None:
@@ -320,5 +355,15 @@ def main():
     launch()
 
 
+def main_test():
+    print('main')
+    app.config.from_object(Config())
+    scheduler = APScheduler()
+    scheduler.init_app(app)
+    scheduler.start()
+    app.run(host="0.0.0.0", port=env.gateway_port, debug=False)
+
+
 if __name__ == "__main__":
     main()
+    # main_test()

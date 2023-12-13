@@ -1,6 +1,8 @@
-cellxgene
-flask
-flask-api
-werkzeug
-psutil
-requests
+#cellxgene
+Flask==1.1.2
+Flask-API
+Werkzeug==1.0.1
+psutil==5.8.0
+requests==2.25.1
+Flask-APScheduler==1.12.2
+Flask-MQTT==1.1.1

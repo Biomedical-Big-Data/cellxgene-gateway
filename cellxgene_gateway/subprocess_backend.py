@@ -47,8 +47,8 @@ class SubprocessBackend:
         cmd = (
             f"yes | {cellxgene_loc} launch {file_path}"
             + f" --port {port}"
-            + " --host 127.0.0.1"
-            + extra_args
+            + " --host 0.0.0.0"
+            # + extra_args
         )
 
         for s in scripts:

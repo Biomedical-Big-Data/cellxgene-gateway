@@ -1,11 +1,9 @@
 import unittest
 
-from flask import Flask
-
 from cellxgene_gateway import flask_util
 from cellxgene_gateway.cache_entry import CacheEntry, CacheEntryStatus
 from cellxgene_gateway.cache_key import CacheKey
-from cellxgene_gateway.gateway import app
+from gateway import app
 from cellxgene_gateway.items.file.fileitem import FileItem
 from cellxgene_gateway.items.file.fileitem_source import FileItemSource
 from cellxgene_gateway.items.item import ItemType

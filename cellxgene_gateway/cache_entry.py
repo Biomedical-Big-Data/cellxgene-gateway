@@ -9,6 +9,7 @@
 import datetime
 import logging
 import re
+import time
 from enum import Enum
 
 import psutil
@@ -128,7 +129,7 @@ class CacheEntry:
         return gateway_content
 
     def cellxgene_basepath(self):
-        return f"http://127.0.0.1:{self.port}"
+        return f"http://0.0.0.0:{self.port}"
 
     def serve_content(self, path):
         gateway_basepath = self.key.gateway_basepath()
@@ -172,6 +173,7 @@ class CacheEntry:
         try:
             cellxgene_response = None
             if request.method in ["GET", "HEAD", "OPTIONS"]:
+                logging.info('full_path: {}'.format(str(full_path)))
                 cellxgene_response = get(full_path, headers=headers)
             elif request.method == "PUT":
                 cellxgene_response = put(
